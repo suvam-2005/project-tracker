@@ -3,6 +3,9 @@ node_modules/
 # Env files
 .env
 .env.*
+!.env.example
+!backend/.env.example
+!docker/.env.example
 backend/.env
 docker/.env
 
