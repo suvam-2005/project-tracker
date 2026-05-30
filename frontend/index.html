@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #080c10;
+    --bg2:       #0d1117;
+    --bg3:       #111820;
+    --border:    rgba(99,179,237,0.12);
+    --border-h:  rgba(99,179,237,0.35);
+    --accent:    #3ecfcf;
+    --accent2:   #5b8dee;
+    --accent-glow: rgba(62,207,207,0.18);
+    --text:      #e2eaf3;
+    --text-dim:  #6b8099;
+    --text-mid:  #9bb3c9;
+    --red:       #ff5370;
+    --green:     #3dffa0;
+    --yellow:    #ffd166;
+    --orange:    #ff9f43;
+    --purple:    #a78bfa;
+    --radius:    10px;
+    --font:      'Syne', sans-serif;
+    --mono:      'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(62,207,207,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(62,207,207,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── LOGIN ───────────────────────────────────────── */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+  }
+
+  .login-box {
+    width: 360px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-box::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 50%; transform: translateX(-50%);
+    width: 60%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .login-logo {
+    width: 52px; height: 52px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .login-box h1 {
+    font-size: 20px; font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+
+  .login-box p {
+    font-size: 13px; color: var(--text-dim);
+    margin-bottom: 32px;
+    font-family: var(--mono);
+  }
+
+  .login-box input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+    letter-spacing: 0.1em;
+  }
+
+  .login-box input:focus { border-color: var(--accent); }
+
+  .login-error {
+    font-size: 12px; color: var(--red);
+    font-family: var(--mono);
+    margin-bottom: 12px;
+    min-height: 18px;
+  }
+
+  /* ── BUTTONS ─────────────────────────────────────── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer; border: none; outline: none;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #080c10;
+    width: 100%;
+    justify-content: center;
+    padding: 13px;
+    font-size: 14px;
+  }
+
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
+
+  .btn-secondary {
+    background: var(--bg3);
+    color: var(--text-mid);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--border-h); color: var(--text); }
+
+  .btn-danger {
+    background: rgba(255,83,112,0.12);
+    color: var(--red);
+    border: 1px solid rgba(255,83,112,0.2);
+  }
+  .btn-danger:hover { background: rgba(255,83,112,0.22); }
+
+  .btn-icon {
+    padding: 8px; border-radius: 8px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer;
+    transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+  }
+  .btn-icon:hover { border-color: var(--border-h); color: var(--text); }
+  .btn-icon.edit:hover { color: var(--accent); border-color: rgba(62,207,207,0.3); }
+  .btn-icon.delete:hover { color: var(--red); border-color: rgba(255,83,112,0.3); }
+
+  /* ── APP SHELL ───────────────────────────────────── */
+  #app { display: none; position: relative; z-index: 1; }
+
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(8,12,16,0.9);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 14px; }
+
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800; color: #080c10;
+  }
+
+  .app-title {
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .app-title span {
+    color: var(--accent);
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .stats-pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+  }
+
+  .stats-pill span { color: var(--accent); font-weight: 500; }
+
+  /* ── MAIN ────────────────────────────────────────── */
+  main { padding: 28px 32px; }
+
+  /* ── TOOLBAR ─────────────────────────────────────── */
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; gap: 12px; flex-wrap: wrap;
+  }
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 1 1 520px;
+    min-width: 260px;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1 1 240px;
+    min-width: 220px;
+  }
+
+  .search-wrap svg { display: none; }
+
+  .search-input {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+    max-width: 420px;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text-dim); }
+
+  .filter-select {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 9px 14px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .filter-select:focus { border-color: var(--accent); }
+
+  @media (max-width: 980px) {
+    .toolbar { align-items: flex-start; }
+    .toolbar-left { flex: 1 1 100%; }
+    .search-wrap { flex: 1 1 100%; min-width: 0; }
+    .search-input { max-width: 100%; }
+    .filter-select { flex: 1 1 200px; }
+  }
+
+  /* ── TABLE ───────────────────────────────────────── */
+  .table-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 1400px;
+  }
+
+  thead tr {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  th:first-child { padding-left: 20px; }
+  th:last-child { text-align: center; }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(99,179,237,0.05);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(62,207,207,0.04); }
+
+  td {
+    padding: 12px 14px;
+    color: var(--text);
+    vertical-align: middle;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  td:first-child { padding-left: 20px; }
+  td:last-child { text-align: center; white-space: nowrap; max-width: unset; }
+
+  .td-mono {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-mid);
+  }
+
+  .td-id {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  .td-value {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  .td-link a {
+    color: var(--accent2);
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .td-link a:hover { text-decoration: underline; }
+
+  /* ── STAGE BADGE ─────────────────────────────────── */
+  .stage-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  .stage-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+  }
+
+  .stage-bid        { background: rgba(91,141,238,0.15); color: var(--accent2); }
+  .stage-bid .stage-dot { background: var(--accent2); }
+
+  .stage-awaiting   { background: rgba(255,209,102,0.12); color: var(--yellow); }
+  .stage-awaiting .stage-dot { background: var(--yellow); }
+
+  .stage-meeting-s  { background: rgba(167,139,250,0.12); color: var(--purple); }
+  .stage-meeting-s .stage-dot { background: var(--purple); }
+
+  .stage-meeting-c  { background: rgba(62,207,207,0.12); color: var(--accent); }
+  .stage-meeting-c .stage-dot { background: var(--accent); }
+
+  .stage-proposal   { background: rgba(255,159,67,0.12); color: var(--orange); }
+  .stage-proposal .stage-dot { background: var(--orange); }
+
+  .stage-won        { background: rgba(61,255,160,0.12); color: var(--green); }
+  .stage-won .stage-dot { background: var(--green); }
+
+  .stage-lost       { background: rgba(255,83,112,0.12); color: var(--red); }
+  .stage-lost .stage-dot { background: var(--red); }
+
+  .stage-hold       { background: rgba(107,128,153,0.15); color: var(--text-dim); }
+  .stage-hold .stage-dot { background: var(--text-dim); }
+
+  /* ── PROBABILITY BADGE ───────────────────────────── */
+  .prob-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+  }
+
+  .prob-low    { background: rgba(255,83,112,0.12);  color: var(--red); }
+  .prob-medium { background: rgba(255,209,102,0.12); color: var(--yellow); }
+  .prob-high   { background: rgba(61,255,160,0.12);  color: var(--green); }
+
+  /* ── ACTIONS ─────────────────────────────────────── */
+  .row-actions { display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+  /* ── EMPTY STATE ─────────────────────────────────── */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+  }
+
+  .empty-state .empty-icon {
+    font-size: 40px; margin-bottom: 16px; opacity: 0.4;
+  }
+
+  .empty-state h3 {
+    font-size: 16px; color: var(--text-mid); margin-bottom: 6px;
+  }
+
+  .empty-state p {
+    font-size: 13px; color: var(--text-dim); font-family: var(--mono);
+  }
+
+  /* ── MODAL ───────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(8,12,16,0.85);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%; max-width: 780px;
+    max-height: 92vh;
+    overflow-y: auto;
+    position: relative;
+    transform: translateY(16px) scale(0.98);
+    transition: transform 0.25s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+  .modal::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 50%; transform: translateX(-50%);
+    width: 40%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .modal-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .modal-title {
+    font-size: 16px; font-weight: 700; letter-spacing: 0.04em;
+  }
+
+  .modal-close {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { color: var(--text); border-color: var(--border-h); }
+
+  .modal-body { padding: 24px 28px; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+  }
+
+  .form-grid .full { grid-column: 1 / -1; }
+
+  .form-group { display: flex; flex-direction: column; gap: 7px; }
+
+  label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  input[type="text"],
+  input[type="url"],
+  input[type="number"],
+  input[type="date"],
+  textarea,
+  select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  input[type="date"] {
+    font-family: var(--mono);
+    color-scheme: dark;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  select option { background: var(--bg3); }
+
+  .modal-footer {
+    padding: 20px 28px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+
+  /* ── CONFIRM DIALOG ──────────────────────────────── */
+  .confirm-overlay {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(8,12,16,0.9);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .confirm-overlay.open { opacity: 1; pointer-events: all; }
+
+  .confirm-box {
+    background: var(--bg2);
+    border: 1px solid rgba(255,83,112,0.3);
+    border-radius: 14px;
+    padding: 32px 36px;
+    width: 380px;
+    text-align: center;
+    transform: scale(0.96);
+    transition: transform 0.2s;
+  }
+
+  .confirm-overlay.open .confirm-box { transform: scale(1); }
+
+  .confirm-icon { font-size: 28px; margin-bottom: 14px; }
+
+  .confirm-box h3 { font-size: 16px; margin-bottom: 8px; }
+
+  .confirm-box p {
+    font-size: 13px; color: var(--text-dim);
+    font-family: var(--mono); margin-bottom: 24px;
+  }
+
+  .confirm-actions { display: flex; gap: 10px; }
+  .confirm-actions .btn { flex: 1; justify-content: center; }
+
+  /* ── TOAST ───────────────────────────────────────── */
+  #toast-container {
+    position: fixed; bottom: 28px; right: 28px;
+    z-index: 500; display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .toast {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    font-size: 13px;
+    min-width: 240px;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+
+  .toast.success { border-color: rgba(61,255,160,0.3); }
+  .toast.error   { border-color: rgba(255,83,112,0.3); }
+  .toast.success .toast-dot { background: var(--green); }
+  .toast.error   .toast-dot { background: var(--red); }
+
+  .toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  @keyframes slideIn {
+    from { transform: translateX(20px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+
+  /* ── LOADING ─────────────────────────────────────── */
+  .loading-row td {
+    text-align: center; padding: 60px;
+    color: var(--text-dim); font-family: var(--mono); font-size: 13px;
+  }
+
+  .spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SCROLLBAR ───────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-h); }
+
+  /* ── RESPONSIVE ──────────────────────────────────── */
+  @media (max-width: 640px) {
+    main { padding: 16px; }
+    header { padding: 0 16px; }
+    .toolbar { align-items: stretch; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid .full { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ──────────────────────────────────────────── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">⬡</div>
+    <h1>PROJECT TRACKER</h1>
+    <p>Enter access password to continue</p>
+    <input type="password" id="login-password" placeholder="••••••••••••" autocomplete="current-password">
+    <div class="login-error" id="login-error"></div>
+    <button class="btn btn-primary" onclick="doLogin()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      ENTER
+    </button>
+  </div>
+</div>
+
+<!-- ── APP ────────────────────────────────────────────── -->
+<div id="app">
+  <header>
+    <div class="header-left">
+      <div class="logo-mark">PT</div>
+      <div>
+        <div class="app-title">PROJECT <span>TRACKER</span></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="stats-pill" id="stats-pill">
+        <span id="stat-total">0</span> projects &nbsp;·&nbsp; <span id="stat-won">0</span> won
+      </div>
+      <button class="btn btn-secondary" onclick="doLogout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="search-wrap">
+          <input type="text" class="search-input" id="search-input" placeholder="Search projects..." oninput="filterTable()">
+        </div>
+        <select class="filter-select" id="filter-stage" onchange="filterTable()">
+          <option value="">All Stages</option>
+          <option>Bid Submitted</option>
+          <option>Awaiting Client Response</option>
+          <option>Meeting Scheduled</option>
+          <option>Meeting Completed</option>
+          <option>Proposal/Estimate Sent</option>
+          <option>Won</option>
+          <option>Lost</option>
+          <option>On Hold</option>
+        </select>
+        <select class="filter-select" id="filter-prob" onchange="filterTable()">
+          <option value="">All Probability</option>
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="openModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Project
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="project-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Project ID</th>
+            <th>Client Name</th>
+            <th>Lead Source</th>
+            <th>Description</th>
+            <th>Sales Owner</th>
+            <th>Stage</th>
+            <th>Proposal Value</th>
+            <th>Probability</th>
+            <th>Next Action</th>
+            <th>Last Follow-up</th>
+            <th>Expected Closure</th>
+            <th>Risk / Concern</th>
+            <th>Link</th>
+            <th>Comments</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr class="loading-row">
+            <td colspan="16"><span class="spinner"></span>Loading projects...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- ── MODAL (Add / Edit) ─────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalIfOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Add Project</div>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="project-form" onsubmit="submitForm(event)">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="f-date">
+          </div>
+
+          <div class="form-group">
+            <label>Project ID</label>
+            <input type="text" id="f-project_id" placeholder="e.g. TL-2026-001">
+          </div>
+
+          <div class="form-group">
+            <label>Client Name</label>
+            <input type="text" id="f-client_name" placeholder="Client or company name">
+          </div>
+
+          <div class="form-group">
+            <label>Lead Source</label>
+            <input type="text" id="f-lead_source" placeholder="e.g. Referral, LinkedIn">
+          </div>
+
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea id="f-description" placeholder="Brief project description..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Sales Owner</label>
+            <input type="text" id="f-sales_owner" placeholder="Name of sales owner">
+          </div>
+
+          <div class="form-group">
+            <label>Stage</label>
+            <select id="f-stage">
+              <option value="">— Select Stage —</option>
+              <option>Bid Submitted</option>
+              <option>Awaiting Client Response</option>
+              <option>Meeting Scheduled</option>
+              <option>Meeting Completed</option>
+              <option>Proposal/Estimate Sent</option>
+              <option>Won</option>
+              <option>Lost</option>
+              <option>On Hold</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Proposal Value (₹)</label>
+            <input type="number" id="f-proposal_value" placeholder="0.00" step="0.01" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>Probability</label>
+            <select id="f-probability">
+              <option value="">— Select —</option>
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label>Next Action</label>
+            <textarea id="f-next_action" placeholder="What is the next step?" style="min-height:64px"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Last Follow-up Date</label>
+            <input type="date" id="f-last_followup_date">
+          </div>
+
+          <div class="form-group">
+            <label>Expected Closure Date</label>
+            <input type="date" id="f-expected_closure_date">
+          </div>
+
+          <div class="form-group full">
+            <label>Risk / Concern</label>
+            <textarea id="f-risk_concern" placeholder="Any risks or concerns..." style="min-height:64px"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Link</label>
+            <input type="url" id="f-link" placeholder="https://...">
+          </div>
+
+          <div class="form-group">
+            <label>Comments</label>
+            <input type="text" id="f-comments" placeholder="Additional comments">
+          </div>
+
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitForm(event)" id="save-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Save Project
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM DELETE ─────────────────────────────────── -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">⚠</div>
+    <h3>Delete Project?</h3>
+    <p>This action cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOASTS ─────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+let allProjects = [];
+let editingId   = null;
+
+// ── Auth ───────────────────────────────────────────────
+async function checkAuth() {
+  try {
+    const r = await fetch('/api/auth/check', { credentials: 'include' });
+    const d = await r.json();
+    if (d.authenticated) showApp();
+  } catch (e) {}
+}
+
+async function doLogin() {
+  const pw  = document.getElementById('login-password').value.trim();
+  const err = document.getElementById('login-error');
+  if (!pw) { err.textContent = 'Please enter the password.'; return; }
+  err.textContent = '';
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ password: pw })
+    });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('login-password').value = '';
+      showApp();
+    } else {
+      err.textContent = d.error || 'Invalid password.';
+    }
+  } catch (e) {
+    err.textContent = 'Connection error. Please try again.';
+  }
+}
+
+async function doLogout() {
+  await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-password').value = '';
+}
+
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadProjects();
+}
+
+// ── API ────────────────────────────────────────────────
+async function loadProjects() {
+  try {
+    const r = await fetch('/api/projects', { credentials: 'include' });
+    if (r.status === 401) { doLogout(); return; }
+    allProjects = await r.json();
+    renderTable(allProjects);
+    updateStats();
+  } catch (e) {
+    showToast('Failed to load projects', 'error');
+  }
+}
+
+async function submitForm(e) {
+  if (e) e.preventDefault();
+  const data = getFormData();
+  const url    = editingId ? `/api/projects/${editingId}` : '/api/projects';
+  const method = editingId ? 'PUT' : 'POST';
+  try {
+    const r = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data)
+    });
+    if (!r.ok) {
+      const d = await r.json();
+      showToast(d.error || 'Error saving', 'error'); return;
+    }
+    closeModal();
+    await loadProjects();
+    showToast(editingId ? 'Project updated' : 'Project added', 'success');
+  } catch (e) {
+    showToast('Connection error', 'error');
+  }
+}
+
+async function deleteProject(id) {
+  if (!Number.isInteger(Number(id))) {
+    showToast('Invalid project id', 'error');
+    return;
+  }
+  try {
+    const r = await fetch(`/api/projects/${id}`, {
+      method: 'DELETE', credentials: 'include'
+    });
+    if (r.status === 401) { doLogout(); return; }
+    if (!r.ok) {
+      let msg = 'Delete failed';
+      try {
+        const d = await r.json();
+        if (d && d.error) msg = d.error;
+      } catch (e) {}
+      showToast(msg, 'error');
+      return;
+    }
+    await loadProjects();
+    showToast('Project deleted', 'success');
+  } catch (e) {
+    showToast('Connection error', 'error');
+  }
+}
+
+// ── Form helpers ───────────────────────────────────────
+const fields = [
+  'date','project_id','client_name','lead_source','description',
+  'sales_owner','stage','proposal_value','probability','next_action',
+  'last_followup_date','expected_closure_date','risk_concern','link','comments'
+];
+
+function getFormData() {
+  const d = {};
+  fields.forEach(f => { d[f] = document.getElementById('f-' + f)?.value || ''; });
+  return d;
+}
+
+function fillForm(p) {
+  fields.forEach(f => {
+    const el = document.getElementById('f-' + f);
+    if (!el) return;
+    let val = p[f] ?? '';
+    // Format date fields
+    if (el.type === 'date' && val) {
+      val = val.substring(0, 10);
+    }
+    el.value = val;
+  });
+}
+
+function clearForm() {
+  fields.forEach(f => {
+    const el = document.getElementById('f-' + f);
+    if (el) el.value = '';
+  });
+}
+
+// ── Modal ──────────────────────────────────────────────
+function openModal(project = null) {
+  editingId = project ? project.id : null;
+  document.getElementById('modal-title').textContent = project ? 'Edit Project' : 'Add Project';
+  document.getElementById('save-btn').innerHTML = project
+    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Update Project'
+    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Save Project';
+  if (project) fillForm(project); else clearForm();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openModalById(id) {
+  const project = allProjects.find(p => String(p.id) === String(id));
+  if (!project) {
+    showToast('Project not found', 'error');
+    return;
+  }
+  openModal(project);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  editingId = null;
+}
+
+function closeModalIfOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// ── Confirm delete ─────────────────────────────────────
+let pendingDeleteId = null;
+
+function confirmDelete(id) {
+  const numericId = Number(id);
+  if (!Number.isInteger(numericId)) {
+    showToast('Invalid project id', 'error');
+    return;
+  }
+  pendingDeleteId = numericId;
+  const deleteId = numericId;
+  document.getElementById('confirm-overlay').classList.add('open');
+  document.getElementById('confirm-delete-btn').onclick = async () => {
+    closeConfirm();
+    await deleteProject(deleteId);
+  };
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  pendingDeleteId = null;
+}
+
+// ── Table rendering ────────────────────────────────────
+function stageBadge(stage) {
+  const map = {
+    'Bid Submitted':             'stage-bid',
+    'Awaiting Client Response':  'stage-awaiting',
+    'Meeting Scheduled':         'stage-meeting-s',
+    'Meeting Completed':         'stage-meeting-c',
+    'Proposal/Estimate Sent':    'stage-proposal',
+    'Won':                       'stage-won',
+    'Lost':                      'stage-lost',
+    'On Hold':                   'stage-hold',
+  };
+  const cls = map[stage] || 'stage-hold';
+  return stage
+    ? `<span class="stage-badge ${cls}"><span class="stage-dot"></span>${stage}</span>`
+    : '<span style="color:var(--text-dim);font-size:11px;">—</span>';
+}
+
+function probBadge(prob) {
+  if (!prob) return '<span style="color:var(--text-dim);font-size:11px;">—</span>';
+  const cls = { Low: 'prob-low', Medium: 'prob-medium', High: 'prob-high' }[prob] || '';
+  return `<span class="prob-badge ${cls}">${prob}</span>`;
+}
+
+function fmtDate(val) {
+  if (!val) return '<span style="color:var(--text-dim);font-size:11px;">—</span>';
+  const d = new Date(val);
+  return `<span class="td-mono">${d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}</span>`;
+}
+
+function fmtValue(val) {
+  if (!val && val !== 0) return '<span style="color:var(--text-dim);font-size:11px;">—</span>';
+  const n = parseFloat(val);
+  return `<span class="td-value">₹${n.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>`;
+}
+
+function normalizeLink(url) {
+  if (!url) return '';
+  const trimmed = String(url).trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+function truncate(str, n = 30) {
+  if (!str) return '<span style="color:var(--text-dim);font-size:11px;">—</span>';
+  return str.length > n ? `<span title="${str.replace(/"/g,"&quot;")}">${str.substring(0, n)}…</span>` : str;
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('table-body');
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="16"><div class="empty-state">
+      <div class="empty-icon">◎</div>
+      <h3>No projects found</h3>
+      <p>Add your first project to get started</p>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(p => {
+    const safeId = Number(p.id);
+    const hasId = Number.isInteger(safeId);
+    return `
+    <tr data-id="${p.id}">
+      <td>${fmtDate(p.date)}</td>
+      <td class="td-id">${p.project_id || '—'}</td>
+      <td>${p.client_name || '—'}</td>
+      <td class="td-mono" style="font-size:11px">${truncate(p.lead_source, 18)}</td>
+      <td>${truncate(p.description, 32)}</td>
+      <td>${p.sales_owner || '—'}</td>
+      <td>${stageBadge(p.stage)}</td>
+      <td>${fmtValue(p.proposal_value)}</td>
+      <td>${probBadge(p.probability)}</td>
+      <td>${truncate(p.next_action, 28)}</td>
+      <td>${fmtDate(p.last_followup_date)}</td>
+      <td>${fmtDate(p.expected_closure_date)}</td>
+      <td>${truncate(p.risk_concern, 24)}</td>
+      <td class="td-link">${p.link ? `<a href="${normalizeLink(p.link)}" target="_blank" rel="noopener noreferrer">↗ Open</a>` : '—'}</td>
+      <td>${truncate(p.comments, 28)}</td>
+      <td>
+        <div class="row-actions">
+          ${hasId ? `
+            <button class="btn-icon edit" title="Edit" onclick="openModalById(${safeId})">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn-icon delete" title="Delete" onclick="confirmDelete(${safeId})">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+          ` : '<span style="color:var(--text-dim);font-size:11px;">—</span>'}
+        </div>
+      </td>
+    </tr>
+  `;
+  }).join('');
+}
+
+// ── Filter ─────────────────────────────────────────────
+function filterTable() {
+  const q     = document.getElementById('search-input').value.toLowerCase();
+  const stage = document.getElementById('filter-stage').value;
+  const prob  = document.getElementById('filter-prob').value;
+
+  const filtered = allProjects.filter(p => {
+    const matchQ = !q || Object.values(p).some(v => String(v || '').toLowerCase().includes(q));
+    const matchS = !stage || p.stage === stage;
+    const matchP = !prob  || p.probability === prob;
+    return matchQ && matchS && matchP;
+  });
+
+  renderTable(filtered);
+}
+
+// ── Stats ──────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('stat-total').textContent = allProjects.length;
+  document.getElementById('stat-won').textContent   = allProjects.filter(p => p.stage === 'Won').length;
+}
+
+// ── Toast ──────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const tc = document.getElementById('toast-container');
+  const t  = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-dot"></span>${msg}`;
+  tc.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ── Keyboard shortcuts ─────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('confirm-overlay').classList.contains('open')) closeConfirm();
+    else if (document.getElementById('modal-overlay').classList.contains('open')) closeModal();
+  }
+});
+
+// ── Init ───────────────────────────────────────────────
+checkAuth();
+</script>
+</body>
+</html>
