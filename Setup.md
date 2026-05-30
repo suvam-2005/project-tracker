@@ -35,6 +35,8 @@ cd docker
 cp .env.example .env
 ```
 
+> Note: `.env` files are ignored by git. Keep secrets there and only commit the `.env.example` templates.
+
 Edit `docker/.env` and set a strong `DB_PASSWORD`:
 
 ```
@@ -63,6 +65,8 @@ docker compose ps
 cd ../backend
 cp .env.example .env
 ```
+
+> Note: `.env` files are ignored by git. Keep secrets there and only commit the `.env.example` templates.
 
 Edit `backend/.env`:
 

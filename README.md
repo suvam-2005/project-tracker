@@ -57,7 +57,7 @@ project-tracker/
 
 ## Environment Variables
 
-All configuration lives in `backend/.env`. See `backend/.env.example` for the template.
+All configuration lives in `backend/.env`. Use `backend/.env.example` as the tracked template; real `.env` files are intentionally ignored by git.
 
 | Variable        | Description                                  |
 |-----------------|----------------------------------------------|
